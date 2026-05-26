@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DLS League — Player Dashboard</title>
+<title>DLS League â€” Player Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -242,10 +242,10 @@ tr.my-team td{color:var(--green);}
 <div id="loginScreen">
   <div class="login-wrap">
     <div class="login-logo">? DLS</div>
-    <div class="login-sub">Dream League Soccer — Mini League Platform</div>
+    <div class="login-sub">Dream League Soccer â€” Mini League Platform</div>
     <div class="login-card">
       <h2>Player Login</h2>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Quick login — tap your account:</p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Quick login â€” tap your account:</p>
       <div class="demo-accounts" id="demoAccounts"></div>
       <div class="divider">or enter manually</div>
       <input class="inp" type="text" id="loginUser" placeholder="Username">
@@ -272,12 +272,13 @@ tr.my-team td{color:var(--green);}
     <div class="nav-item" onclick="showPage('myteam')" id="nav-myteam"><span class="icon">??</span> My Team</div>
     <div class="nav-item" onclick="showPage('stats')" id="nav-stats"><span class="icon">??</span> Stats</div>
     <div class="nav-item" onclick="showPage('notifs')" id="nav-notifs"><span class="icon">??</span> Notifications <span class="nav-badge" id="notifCount">0</span></div>
+    <div class="nav-item" href="admin.html" ><span class="icon">??</span> Admin <span class="nav-badge" id="notifCount">0</span></div>
     <div class="sidebar-bottom">
       <div class="user-chip" id="userChip" onclick="showPage('profile')">
         <div class="ava" id="sidebarAva">?</div>
         <div class="info">
-          <div class="uname" id="sidebarName">—</div>
-          <div class="uteam" id="sidebarTeam">—</div>
+          <div class="uname" id="sidebarName">â€”</div>
+          <div class="uteam" id="sidebarTeam">â€”</div>
         </div>
       </div>
     </div>
@@ -605,7 +606,7 @@ function renderLive() {
           <span style="font-size:13px;font-weight:700">${h.logo} ${h.name} <span style="color:var(--muted)">vs</span> ${a.logo} ${a.name}</span>
           <span style="margin-left:auto" class="viewer-pill">?? ${Math.floor(Math.random()*5)+2} watching</span>
         </div>
-        <div style="margin-top:10px;font-family:'Bebas Neue',sans-serif;font-size:36px;text-align:center;letter-spacing:4px">${f.homeGoals} — ${f.awayGoals}</div>
+        <div style="margin-top:10px;font-family:'Bebas Neue',sans-serif;font-size:36px;text-align:center;letter-spacing:4px">${f.homeGoals} â€” ${f.awayGoals}</div>
         <button class="btn btn-red" style="width:100%;margin-top:10px">?? Watch Live Stream</button>
       </div>`;
     }).join('');
@@ -621,7 +622,7 @@ function renderLive() {
       return `<div class="room-card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px">
         <div>
           <div style="font-size:13px;font-weight:700">${h.logo} ${h.name} vs ${a.logo} ${a.name}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">${f.date} · ${f.time}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${f.date} Â· ${f.time}</div>
         </div>
         <div style="margin-left:auto;display:flex;gap:8px">
           ${isMine ? `<button class="btn btn-purple" style="font-size:11px;padding:6px 12px" onclick="startBroadcast(${f.id})">?? Go Live</button>` : ''}
@@ -664,7 +665,7 @@ function startBroadcast(fixtureId) {
         <div style="color:var(--muted);line-height:1.8">
           1. Click <strong style="color:var(--text)">"Share Screen"</strong> below<br>
           2. Choose your <strong style="color:var(--text)">DLS game window or browser tab</strong><br>
-          3. Click "Share" — your friends will see your game live<br>
+          3. Click "Share" â€” your friends will see your game live<br>
           4. Use <strong style="color:var(--text)">"Stop Sharing"</strong> when done
         </div>
       </div>
@@ -760,7 +761,7 @@ function openRoom(fixtureId) {
   const f = DLS.fixtureById(fixtureId);
   if(!f) return;
   const h = DLS.teamById(f.homeId), a = DLS.teamById(f.awayId);
-  const score = f.status==='NS' ? 'vs' : `${f.homeGoals} — ${f.awayGoals}`;
+  const score = f.status==='NS' ? 'vs' : `${f.homeGoals} â€” ${f.awayGoals}`;
   const statusLabel = { FT:'Full Time', LIVE:'? LIVE', HT:'Half Time', NS:f.time };
 
   document.getElementById('roomTitle').textContent = `${h.logo} ${h.name} vs ${a.logo} ${a.name}`;
@@ -791,7 +792,7 @@ function openRoom(fixtureId) {
               <div class="sb-name">${a.name}</div>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px">${f.date} · ${f.time}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">${f.date} Â· ${f.time}</div>
         </div>
 
         <div class="stream-container" id="roomStream" style="margin-bottom:16px;aspect-ratio:16/9">
@@ -1003,7 +1004,7 @@ function renderProfile() {
     <div class="profile-hero">
       <div class="profile-ava" style="border-color:${t.color};background:${t.color}22">${currentUser.avatar}</div>
       <h2>${currentUser.name}</h2>
-      <p>${t.logo} ${t.name} · Manager</p>
+      <p>${t.logo} ${t.name} Â· Manager</p>
       <p style="margin-top:4px">@${currentUser.username}</p>
     </div>
     <div class="grid-3">
