@@ -1,5 +1,5 @@
 // ============================================================
-// DLS LEAGUE — SHARED DATA STORE (data.js)
+// DLS LEAGUE â€” SHARED DATA STORE (data.js)
 // Both admin.html and user.html load this file
 // In production, replace with Firebase / Supabase
 // ============================================================
