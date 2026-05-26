@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLS Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--bg2:#0d1120;--bg3:#111827;--bg4:#1a2540;
+  --border:#1e2d48;--border2:#263352;
+  --green:#00f57a;--green2:#00c45e;--red:#ff2d55;--amber:#ffcc00;
+  --blue:#0a84ff;--purple:#bf5af2;--cyan:#32d9ff;
+  --text:#e8eeff;--muted:#4a5a7a;--r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-wrap{width:100%;max-width:380px;}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--amber);letter-spacing:6px;text-align:center;}
+.login-sub{text-align:center;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:40px;}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px;}
+.login-card h2{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--amber);margin-bottom:20px;}
+.inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:13px 15px;border-radius:10px;font-size:14px;font-family:'Barlow',sans-serif;outline:none;margin-bottom:10px;transition:border .2s;}
+.inp:focus{border-color:var(--amber);}
+.btn-amber-full{width:100%;background:var(--amber);color:#000;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Barlow',sans-serif;letter-spacing:1px;transition:all .2s;}
+.btn-amber-full:hover{background:#e6b800;}
+.err{color:var(--red);font-size:12px;margin-top:8px;text-align:center;}
+.admin-badge{display:inline-block;background:rgba(255,204,0,.1);border:1px solid var(--amber);color:var(--amber);padding:4px 10px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:2px;text-align:center;margin-bottom:20px;width:100%;}
+
+/* SHELL */
+#appShell{display:none;}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:var(--bg2);border-right:1px solid var(--border);z-index:50;display:flex;flex-direction:column;}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
+.sb-logo .brand{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--amber);letter-spacing:4px;}
+.sb-logo .admin-tag{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.nav-section{padding:14px 20px 6px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 20px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;color:var(--muted);font-size:13px;font-weight:500;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--bg3);color:var(--amber);border-left-color:var(--amber);}
+.nav-item .icon{font-size:15px;width:18px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;}
+.sb-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);}
+.sb-user .ava{font-size:20px;width:34px;height:34px;border-radius:50%;background:rgba(255,204,0,.1);display:flex;align-items:center;justify-content:center;border:2px solid var(--amber);}
+.sb-user .un{font-size:12px;font-weight:700;}
+.sb-user .ur{font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:1px;}
+
+/* MAIN */
+.main{margin-left:230px;min-height:100vh;padding:28px 28px 60px;}
+
+/* PAGES */
+.page{display:none;animation:fadeIn .2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;display:flex;align-items:center;gap:10px;}
+.sec-title span{color:var(--amber);}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
+.card-sm{padding:14px 16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* STAT CARD */
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:14px;}
+.stat-card .icon-wrap{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.stat-card .val{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;}
+.stat-card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'Barlow',sans-serif;transition:all .2s;letter-spacing:.5px;}
+.btn-green{background:var(--green);color:#000;}
+.btn-green:hover{background:var(--green2);}
+.btn-amber{background:rgba(255,204,0,.12);color:var(--amber);border:1px solid var(--amber);}
+.btn-amber:hover{background:rgba(255,204,0,.22);}
+.btn-red{background:rgba(255,45,85,.12);color:var(--red);border:1px solid var(--red);}
+.btn-red:hover{background:rgba(255,45,85,.22);}
+.btn-blue{background:rgba(10,132,255,.12);color:var(--blue);border:1px solid var(--blue);}
+.btn-purple{background:rgba(191,90,242,.12);color:var(--purple);border:1px solid var(--purple);}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--amber);}
+.btn-cyan{background:rgba(50,217,255,.12);color:var(--cyan);border:1px solid var(--cyan);}
+.btn-sm{padding:6px 12px;font-size:11px;}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{color:var(--muted);text-transform:uppercase;font-size:9px;letter-spacing:1px;padding:10px;text-align:left;border-bottom:1px solid var(--border);}
+thead th.rc{text-align:center;}
+tbody tr{border-bottom:1px solid rgba(30,45,72,.6);transition:background .15s;}
+tbody tr:hover{background:var(--bg3);}
+tbody td{padding:12px 10px;font-size:13px;}
+tbody td.rc{text-align:center;}
+.pts-cell{font-weight:800;color:var(--green);font-size:14px;}
+.status-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.s-ft{background:#111;color:var(--muted);border:1px solid #222;}
+.s-live{background:rgba(255,45,85,.15);color:var(--red);border:1px solid var(--red);}
+.s-ht{background:rgba(255,204,0,.1);color:var(--amber);border:1px solid var(--amber);}
+.s-ns{background:rgba(10,132,255,.1);color:var(--blue);border:1px solid var(--blue);}
+.s-pending{background:rgba(255,204,0,.1);color:var(--amber);border:1px solid var(--amber);}
+.s-approved{background:rgba(0,245,122,.1);color:var(--green);border:1px solid var(--green);}
+.s-rejected{background:rgba(255,45,85,.12);color:var(--red);border:1px solid var(--red);}
+
+/* FORM */
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.form-group label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;}
+.form-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:9px;font-size:13px;font-family:'Barlow',sans-serif;outline:none;transition:border .2s;}
+.form-inp:focus{border-color:var(--amber);}
+.form-inp option{background:var(--bg2);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-section{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.form-section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* AVATAR PICKER */
+.ava-picker{display:flex;flex-wrap:wrap;gap:8px;}
+.ava-opt{width:40px;height:40px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all .2s;}
+.ava-opt:hover,.ava-opt.selected{border-color:var(--amber);background:rgba(255,204,0,.1);}
+
+/* NOTIFICATIONS */
+.notif-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(30,45,72,.5);}
+.notif-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--amber);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.modal-title span{color:var(--text);}
+
+/* LIVE MATCH CONTROLS */
+.live-ctrl{background:linear-gradient(135deg,#0d0800,#1a0f00);border:2px solid var(--amber);border-radius:14px;padding:20px;margin-bottom:14px;}
+.score-display{font-family:'Bebas Neue',sans-serif;font-size:60px;text-align:center;letter-spacing:8px;line-height:1;color:var(--text);}
+.score-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;text-align:center;}
+.score-team-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.score-btn-row{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+/* USER CARD */
+.user-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;}
+.user-ava{width:44px;height:44px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid var(--border);flex-shrink:0;}
+.user-info{flex:1;}
+.user-info .uname{font-size:14px;font-weight:700;}
+.user-info .umeta{font-size:11px;color:var(--muted);margin-top:2px;}
+.user-actions{display:flex;gap:6px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{border-color:var(--red);color:var(--red);}
+.toast.warn{border-color:var(--amber);color:var(--amber);}
+
+/* FORM TABS */
+.tab-row{display:flex;gap:6px;margin-bottom:18px;background:var(--bg3);padding:4px;border-radius:10px;border:1px solid var(--border);}
+.tab-btn{flex:1;padding:8px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:700;font-family:'Barlow',sans-serif;transition:all .2s;text-transform:uppercase;letter-spacing:.8px;}
+.tab-btn.active{background:var(--amber);color:#000;}
+
+/* FORM RADIO GROUP */
+.radio-group{display:flex;gap:8px;flex-wrap:wrap;}
+.radio-opt{flex:1;min-width:80px;padding:9px;border-radius:8px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:12px;font-weight:700;transition:all .2s;}
+.radio-opt.sel{border-color:var(--amber);background:rgba(255,204,0,.08);color:var(--amber);}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .main{margin-left:0;padding:16px 14px 40px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-logo">⚽ DLS</div>
+    <div class="login-sub">Admin Control Panel</div>
+    <div class="login-card">
+      <div class="admin-badge">🔐 ADMIN ACCESS ONLY</div>
+      <h2>Sign In</h2>
+      <input class="inp" type="text" id="loginUser" placeholder="Admin username" value="admin">
+      <input class="inp" type="password" id="loginPass" placeholder="Admin password" value="">
+      <button class="btn-amber-full" onclick="doLogin()">Access Admin Panel</button>
+      <div class="err" id="loginErr"></div>
+      <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Default: admin / admin123</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="brand">⚽ DLS</div>
+      <div class="admin-tag">Admin Panel · Season 1</div>
+    </div>
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-section">League</div>
+    <div class="nav-item" onclick="showPage('matches')" id="nav-matches"><span class="icon">⚽</span> Matches <span class="nav-badge" id="liveCountBadge" style="display:none">0</span></div>
+    <div class="nav-item" onclick="showPage('table')" id="nav-table"><span class="icon">📋</span> League Table</div>
+    <div class="nav-item" onclick="showPage('reports')" id="nav-reports"><span class="icon">📝</span> Score Reports <span class="nav-badge" id="reportsBadge">0</span></div>
+    <div class="nav-section">Management</div>
+    <div class="nav-item" onclick="showPage('users')" id="nav-users"><span class="icon">👥</span> Players / Users</div>
+    <div class="nav-item" onclick="showPage('teams')" id="nav-teams"><span class="icon">🏆</span> Teams</div>
+    <div class="nav-item" onclick="showPage('stats')" id="nav-stats"><span class="icon">📈</span> Stats</div>
+    <div class="nav-item" onclick="showPage('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="ava">👑</div>
+        <div>
+          <div class="un">Administrator</div>
+          <div class="ur">⚡ Full Access</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="sec-head">
+        <div class="sec-title">📊 <span>Dashboard</span></div>
+        <div style="font-size:12px;color:var(--muted)" id="dashClock"></div>
+      </div>
+      <div class="grid-4" style="margin-bottom:20px" id="dashStats"></div>
+      <div class="grid-2">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);margin-bottom:12px">LIVE / RECENT MATCHES</div>
+          <div id="dashMatches"></div>
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);margin-bottom:12px">PENDING REPORTS</div>
+          <div id="dashReports"></div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);margin:20px 0 12px">QUICK ACTIONS</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-green" onclick="showPage('matches');setTimeout(()=>openNewMatchModal(),200)">➕ New Match</button>
+            <button class="btn btn-amber" onclick="showPage('users');setTimeout(()=>openNewUserModal(),200)">👤 Add Player</button>
+            <button class="btn btn-cyan" onclick="showPage('reports')">📝 Review Reports</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHES -->
+    <div class="page" id="page-matches">
+      <div class="sec-head">
+        <div class="sec-title">⚽ <span>Matches</span></div>
+        <button class="btn btn-green" onclick="openNewMatchModal()">➕ New Match</button>
+      </div>
+      <!-- Tabs -->
+      <div class="tab-row" style="max-width:480px">
+        <button class="tab-btn active" id="matchTab-all" onclick="filterMatches('all')">All</button>
+        <button class="tab-btn" id="matchTab-live" onclick="filterMatches('live')">🔴 Live</button>
+        <button class="tab-btn" id="matchTab-ns" onclick="filterMatches('ns')">Upcoming</button>
+        <button class="tab-btn" id="matchTab-ft" onclick="filterMatches('ft')">Finished</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Home</th><th class="rc">Score</th><th>Away</th>
+            <th class="rc">Status</th><th class="rc">Actions</th>
+          </tr></thead>
+          <tbody id="matchesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="page" id="page-table">
+      <div class="sec-head"><div class="sec-title">📋 <span>League Table</span></div></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>#</th><th>Team</th><th class="rc">P</th><th class="rc">W</th><th class="rc">D</th><th class="rc">L</th><th class="rc">GF</th><th class="rc">GA</th><th class="rc">GD</th><th class="rc">Pts</th></tr></thead>
+          <tbody id="fullTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SCORE REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="sec-head"><div class="sec-title">📝 <span>Score Reports</span></div></div>
+      <div class="card" style="padding:0;overflow:hidden" id="reportsTable"></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="sec-head">
+        <div class="sec-title">👥 <span>Players</span></div>
+        <button class="btn btn-green" onclick="openNewUserModal()">➕ Add Player</button>
+      </div>
+      <div id="usersList"></div>
+    </div>
+
+    <!-- TEAMS -->
+    <div class="page" id="page-teams">
+      <div class="sec-head"><div class="sec-title">🏆 <span>Teams</span></div></div>
+      <div id="teamsList"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="page" id="page-stats">
+      <div class="sec-head"><div class="sec-title">📈 <span>Stats</span></div></div>
+      <div class="grid-2">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);margin-bottom:12px">TOP SCORERS</div>
+          <div class="card" id="scorersList"></div>
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);margin-bottom:12px">TOP ASSISTS</div>
+          <div class="card" id="assistsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="sec-head"><div class="sec-title">⚙️ <span>Settings</span></div></div>
+      <div style="max-width:560px">
+        <div class="form-section">
+          <div class="form-section-title">🏆 League Info</div>
+          <div class="form-group"><label>League Name</label><input class="form-inp" id="setLeague" value="DLS Mini League"></div>
+          <div class="form-group"><label>Season</label><input class="form-inp" id="setSeason" value="Season 1"></div>
+          <div class="form-group"><label>City</label><input class="form-inp" id="setCity" value="Kigali, Rwanda"></div>
+          <button class="btn btn-green" onclick="saveSettings()">Save Settings</button>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">🔐 Admin Password</div>
+          <div class="form-group"><label>New Password</label><input class="form-inp" type="password" id="newPass" placeholder="Enter new password"></div>
+          <div class="form-group"><label>Confirm</label><input class="form-inp" type="password" id="confPass" placeholder="Confirm password"></div>
+          <button class="btn btn-amber" onclick="changePass()">Change Password</button>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">📣 Broadcast Notification</div>
+          <div class="form-group"><label>Message</label><input class="form-inp" id="broadcastMsg" placeholder="e.g. Match starts in 10 minutes!"></div>
+          <div class="form-group"><label>Type</label>
+            <select class="form-inp" id="broadcastType">
+              <option value="match">Match</option>
+              <option value="table">Table Update</option>
+              <option value="report">Announcement</option>
+            </select>
+          </div>
+          <button class="btn btn-purple" onclick="sendBroadcast()">📣 Send to All Players</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- NEW MATCH MODAL -->
+<div class="modal" id="newMatchModal" onclick="closeModal('newMatchModal',event)">
+  <div class="modal-box">
+    <div class="modal-title">➕ <span>Create Match</span></div>
+    <div class="form-section">
+      <div class="form-section-title">⚽ Teams</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Home Team</label>
+          <select class="form-inp" id="nmHome"></select>
+        </div>
+        <div class="form-group"><label>Away Team</label>
+          <select class="form-inp" id="nmAway"></select>
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="form-section-title">📅 Schedule</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Date</label><input class="form-inp" type="text" id="nmDate" placeholder="e.g. Tomorrow, Fri 30"></div>
+        <div class="form-group"><label>Time</label><input class="form-inp" type="time" id="nmTime" value="19:00"></div>
+      </div>
+      <div class="form-group"><label>Initial Status</label>
+        <div class="radio-group" id="nmStatusGroup">
+          <div class="radio-opt sel" onclick="selectNmStatus('NS',this)">📅 Scheduled</div>
+          <div class="radio-opt" onclick="selectNmStatus('LIVE',this)">🔴 Live Now</div>
+        </div>
+        <input type="hidden" id="nmStatus" value="NS">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:4px">
+      <label><input type="checkbox" id="nmHighlight" style="margin-right:6px">⭐ Mark as Match of the Week</label>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-green" style="flex:1" onclick="createMatch()">Create Match</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('newMatchModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MATCH MODAL -->
+<div class="modal" id="editMatchModal" onclick="closeModal('editMatchModal',event)">
+  <div class="modal-box">
+    <div class="modal-title">✏️ <span>Edit Match</span></div>
+    <input type="hidden" id="emId">
+
+    <!-- Live Score Controls -->
+    <div class="live-ctrl" id="emScoreSection">
+      <div id="emTeamsRow" class="score-teams" style="margin-bottom:10px">
+        <div class="score-team-name" id="emHomeName">Home</div>
+        <div style="color:var(--muted);font-size:13px">vs</div>
+        <div class="score-team-name" id="emAwayName">Away</div>
+      </div>
+      <div class="score-display" id="emScoreDisplay">0 - 0</div>
+      <div class="score-btn-row">
+        <button class="btn btn-green btn-sm" onclick="adjustScore('home',1)">+1 Home ⚽</button>
+        <button class="btn btn-red btn-sm" onclick="adjustScore('home',-1)">-1 Home</button>
+        <button class="btn btn-green btn-sm" onclick="adjustScore('away',1)">+1 Away ⚽</button>
+        <button class="btn btn-red btn-sm" onclick="adjustScore('away',-1)">-1 Away</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">🏟️ Match Status</div>
+      <div class="radio-group" id="emStatusGroup">
+        <div class="radio-opt" onclick="selectEmStatus('NS',this)">📅 Not Started</div>
+        <div class="radio-opt" onclick="selectEmStatus('LIVE',this)">🔴 Live</div>
+        <div class="radio-opt" onclick="selectEmStatus('HT',this)">⏸️ Half Time</div>
+        <div class="radio-opt" onclick="selectEmStatus('FT',this)">✅ Full Time</div>
+      </div>
+      <input type="hidden" id="emStatus" value="NS">
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">⚽ Add Match Event</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Minute</label><input class="form-inp" type="number" id="evMin" min="1" max="120" placeholder="45"></div>
+        <div class="form-group"><label>Team</label><select class="form-inp" id="evTeam"></select></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Player</label><select class="form-inp" id="evPlayer"></select></div>
+        <div class="form-group"><label>Type</label>
+          <select class="form-inp" id="evType">
+            <option value="goal">⚽ Goal</option>
+            <option value="assist">🎯 Assist</option>
+            <option value="own">😬 Own Goal</option>
+            <option value="pen">🎯 Penalty</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-cyan btn-sm" onclick="addMatchEvent()">Add Event</button>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-amber" style="flex:1" onclick="saveMatchEdit()">Save Changes</button>
+      <button class="btn btn-red btn-sm" onclick="deleteMatch()" style="padding:9px 14px">🗑️</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('editMatchModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW USER MODAL -->
+<div class="modal" id="newUserModal" onclick="closeModal('newUserModal',event)">
+  <div class="modal-box">
+    <div class="modal-title">👤 <span id="newUserTitle">Add Player</span></div>
+    <input type="hidden" id="nuEditId">
+    <div class="form-section">
+      <div class="form-section-title">👤 Player Info</div>
+      <div class="form-group"><label>Full Name</label><input class="form-inp" id="nuName" placeholder="e.g. John Doe"></div>
+      <div class="form-group"><label>Username</label><input class="form-inp" id="nuUsername" placeholder="e.g. john_fc"></div>
+      <div class="form-group"><label>Password</label><input class="form-inp" type="password" id="nuPass" placeholder="Set password"></div>
+      <div class="form-group"><label>Team</label><select class="form-inp" id="nuTeam"></select></div>
+      <div class="form-group"><label>Avatar</label>
+        <div class="ava-picker" id="nuAvaOptions">
+          <div class="ava-opt selected" onclick="selectAva(this,'⚽')">⚽</div>
+          <div class="ava-opt" onclick="selectAva(this,'🦁')">🦁</div>
+          <div class="ava-opt" onclick="selectAva(this,'⭐')">⭐</div>
+          <div class="ava-opt" onclick="selectAva(this,'🔥')">🔥</div>
+          <div class="ava-opt" onclick="selectAva(this,'🌌')">🌌</div>
+          <div class="ava-opt" onclick="selectAva(this,'👑')">👑</div>
+          <div class="ava-opt" onclick="selectAva(this,'🏆')">🏆</div>
+          <div class="ava-opt" onclick="selectAva(this,'⚡')">⚡</div>
+          <div class="ava-opt" onclick="selectAva(this,'🎯')">🎯</div>
+        </div>
+        <input type="hidden" id="nuAva" value="⚽">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-green" style="flex:1" onclick="saveUser()">Save Player</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('newUserModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let currentMatchFilter = 'all';
+let editingMatchId = null;
+let editHomeTmp = 0, editAwayTmp = 0;
+
+// ── LOGIN ──────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(u === 'admin' && p === DLS.settings.adminPassword) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    renderAll();
+    startClock();
+  } else {
+    document.getElementById('loginErr').textContent = 'Invalid admin credentials';
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// ── NAV ────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const ni = document.getElementById('nav-' + name);
+  if(ni) ni.classList.add('active');
+  renderAll();
+}
+
+// ── CLOCK ──────────────────────────────────────────────────
+function startClock() {
+  const el = document.getElementById('dashClock');
+  const tick = () => el.textContent = new Date().toLocaleString('en-RW',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  tick(); setInterval(tick, 60000);
+}
+
+// ── TOAST ──────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (type==='err'?' err':type==='warn'?' warn':'');
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ── MODAL HELPERS ──────────────────────────────────────────
+function closeModal(id, e) { if(e.target.id===id) document.getElementById(id).style.display='none'; }
+
+// ── RENDER ALL ─────────────────────────────────────────────
+function renderAll() {
+  renderDashboard();
+  renderMatchesTable();
+  renderFullTable();
+  renderReports();
+  renderUsers();
+  renderTeams();
+  renderStats();
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────
+function renderDashboard() {
+  const liveCount = DLS.fixtures.filter(f=>f.status==='LIVE').length;
+  const pending = DLS.scoreReports.filter(r=>r.status==='pending').length;
+  const badge = document.getElementById('liveCountBadge');
+  if(liveCount>0){badge.style.display='inline';badge.textContent=liveCount;}else badge.style.display='none';
+  document.getElementById('reportsBadge').textContent = pending;
+
+  document.getElementById('dashStats').innerHTML = [
+    { icon:'🏟️', color:'rgba(0,245,122,.15)', val: DLS.fixtures.length, lbl:'Total Matches' },
+    { icon:'🔴', color:'rgba(255,45,85,.15)',  val: liveCount,            lbl:'Live Now' },
+    { icon:'👥', color:'rgba(10,132,255,.15)', val: DLS.users.length,     lbl:'Players' },
+    { icon:'📝', color:'rgba(255,204,0,.15)',  val: pending,              lbl:'Pending Reports' },
+  ].map(s => `
+    <div class="stat-card">
+      <div class="icon-wrap" style="background:${s.color};font-size:22px">${s.icon}</div>
+      <div><div class="val" style="color:var(--amber)">${s.val}</div><div class="lbl">${s.lbl}</div></div>
+    </div>`).join('');
+
+  // recent matches
+  const recent = [...DLS.fixtures].reverse().slice(0,4);
+  document.getElementById('dashMatches').innerHTML = recent.map(f => {
+    const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+    const sc = f.status==='NS'?'vs':`${f.homeGoals}-${f.awayGoals}`;
+    const cls = {FT:'s-ft',LIVE:'s-live',HT:'s-ht',NS:'s-ns'}[f.status];
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(30,45,72,.4);gap:8px;font-size:13px">
+      <div style="font-weight:600">${h.logo} ${h.name}</div>
+      <div style="text-align:center;min-width:80px">
+        <span class="status-badge ${cls}" style="display:block;margin-bottom:3px">${f.status==='LIVE'?'🔴 LIVE':f.status}</span>
+        <strong>${sc}</strong>
+      </div>
+      <div style="font-weight:600;text-align:right">${a.logo} ${a.name}</div>
+      <button class="btn btn-amber btn-sm" onclick="openEditModal(${f.id})">Edit</button>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:13px;padding:10px 0">No matches yet</div>';
+
+  // pending reports
+  const pendingReports = DLS.scoreReports.filter(r=>r.status==='pending').slice(0,3);
+  document.getElementById('dashReports').innerHTML = pendingReports.map(r => {
+    const f=DLS.fixtureById(r.fixtureId);
+    if(!f) return '';
+    const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+    const submitter=DLS.userById(r.submittedBy);
+    return `<div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px">${h.logo} ${h.name} <span style="color:var(--amber)">${r.homeGoals}–${r.awayGoals}</span> ${a.logo} ${a.name}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">By ${submitter.name} · ${r.time}${r.note?` · "${r.note}"`:''}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-green btn-sm" onclick="approveReport(${r.id})">✓ Approve</button>
+        <button class="btn btn-red btn-sm" onclick="rejectReport(${r.id})">✗ Reject</button>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:13px;padding:10px 0">No pending reports</div>';
+}
+
+// ── MATCHES TABLE ──────────────────────────────────────────
+function filterMatches(f) {
+  currentMatchFilter = f;
+  document.querySelectorAll('[id^="matchTab-"]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('matchTab-'+f).classList.add('active');
+  renderMatchesTable();
+}
+
+function renderMatchesTable() {
+  let list = [...DLS.fixtures];
+  if(currentMatchFilter==='live') list = list.filter(f=>f.status==='LIVE');
+  else if(currentMatchFilter==='ns') list = list.filter(f=>f.status==='NS');
+  else if(currentMatchFilter==='ft') list = list.filter(f=>f.status==='FT');
+
+  document.getElementById('matchesTableBody').innerHTML = list.map(f => {
+    const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+    const sc = f.status==='NS'?'—':`${f.homeGoals} – ${f.awayGoals}`;
+    const cls = {FT:'s-ft',LIVE:'s-live',HT:'s-ht',NS:'s-ns'}[f.status];
+    return `<tr>
+      <td style="color:var(--muted)">${f.date} ${f.time}</td>
+      <td><strong>${h.logo} ${h.name}</strong></td>
+      <td class="rc"><strong>${sc}</strong></td>
+      <td><strong>${a.logo} ${a.name}</strong></td>
+      <td class="rc"><span class="status-badge ${cls}">${f.status==='LIVE'?'🔴 LIVE':f.status}</span></td>
+      <td class="rc">
+        <button class="btn btn-amber btn-sm" onclick="openEditModal(${f.id})" style="margin-right:4px">✏️ Edit</button>
+        <button class="btn btn-red btn-sm" onclick="deleteMatch(${f.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No matches</td></tr>`;
+}
+
+// ── NEW MATCH MODAL ────────────────────────────────────────
+function openNewMatchModal() {
+  const sel1 = document.getElementById('nmHome');
+  const sel2 = document.getElementById('nmAway');
+  sel1.innerHTML = sel2.innerHTML = DLS.teams.map(t=>`<option value="${t.id}">${t.logo} ${t.name}</option>`).join('');
+  sel2.selectedIndex = 1;
+  document.getElementById('nmDate').value = 'Today';
+  document.getElementById('nmTime').value = '19:00';
+  document.getElementById('nmStatus').value = 'NS';
+  document.getElementById('newMatchModal').style.display = 'flex';
+}
+
+function selectNmStatus(val, el) {
+  document.querySelectorAll('#nmStatusGroup .radio-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('nmStatus').value = val;
+}
+
+function createMatch() {
+  const homeId = parseInt(document.getElementById('nmHome').value);
+  const awayId = parseInt(document.getElementById('nmAway').value);
+  if(homeId === awayId) { toast('Home and Away teams must be different!','err'); return; }
+  const date = document.getElementById('nmDate').value.trim() || 'TBD';
+  const t = document.getElementById('nmTime').value;
+  const time = t ? (()=>{const[h,m]=t.split(':');const hr=parseInt(h);return `${hr>12?hr-12:hr}:${m} ${hr>=12?'PM':'AM'}`;})() : '7:00 PM';
+  const status = document.getElementById('nmStatus').value;
+  const highlight = document.getElementById('nmHighlight').checked;
+
+  const newFix = { id:DLS.nextId(DLS.fixtures), homeId, awayId, time, date, status,
+    homeGoals:0, awayGoals:0, highlighted:highlight, events:[], chat:[] };
+  DLS.fixtures.push(newFix);
+  if(highlight) DLS.matchOfWeek = newFix.id;
+
+  const h=DLS.teamById(homeId),a=DLS.teamById(awayId);
+  DLS.notifyAll(`New match: ${h.name} vs ${a.name} on ${date} at ${time}`, 'match');
+  document.getElementById('newMatchModal').style.display = 'none';
+  toast(`✅ Match created: ${h.name} vs ${a.name}`);
+  renderAll();
+}
+
+// ── EDIT MATCH MODAL ───────────────────────────────────────
+function openEditModal(fixtureId) {
+  const f = DLS.fixtureById(fixtureId);
+  if(!f) return;
+  editingMatchId = fixtureId;
+  editHomeTmp = f.homeGoals;
+  editAwayTmp = f.awayGoals;
+  const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+
+  document.getElementById('emId').value = fixtureId;
+  document.getElementById('emHomeName').textContent = `${h.logo} ${h.name}`;
+  document.getElementById('emAwayName').textContent = `${a.logo} ${a.name}`;
+  updateScoreDisplay();
+
+  // Status buttons
+  document.querySelectorAll('#emStatusGroup .radio-opt').forEach(el => {
+    const val = el.onclick.toString().match(/'(\w+)'/)?.[1];
+    el.classList.toggle('sel', document.getElementById('emStatus').value === f.status);
+  });
+  document.querySelectorAll('#emStatusGroup .radio-opt').forEach(el => el.classList.remove('sel'));
+  const statuses = ['NS','LIVE','HT','FT'];
+  const stIdx = statuses.indexOf(f.status);
+  const opts = document.querySelectorAll('#emStatusGroup .radio-opt');
+  if(opts[stIdx]) opts[stIdx].classList.add('sel');
+  document.getElementById('emStatus').value = f.status;
+
+  // Event dropdowns
+  const teamSel = document.getElementById('evTeam');
+  teamSel.innerHTML = [f.homeId,f.awayId].map(tid=>{const t=DLS.teamById(tid);return `<option value="${tid}">${t.logo} ${t.name}</option>`;}).join('');
+  updateEventPlayerSel(f.homeId);
+  teamSel.onchange = () => updateEventPlayerSel(parseInt(teamSel.value));
+
+  document.getElementById('editMatchModal').style.display = 'flex';
+}
+
+function updateEventPlayerSel(teamId) {
+  const players = DLS.players.filter(p=>p.teamId===teamId);
+  document.getElementById('evPlayer').innerHTML = players.map(p=>`<option value="${p.name}">${p.name}</option>`).join('') || '<option>No players</option>';
+}
+
+function adjustScore(side, delta) {
+  if(side==='home') editHomeTmp = Math.max(0, editHomeTmp + delta);
+  else editAwayTmp = Math.max(0, editAwayTmp + delta);
+  updateScoreDisplay();
+}
+
+function updateScoreDisplay() {
+  document.getElementById('emScoreDisplay').textContent = `${editHomeTmp} - ${editAwayTmp}`;
+}
+
+function selectEmStatus(val, el) {
+  document.querySelectorAll('#emStatusGroup .radio-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('emStatus').value = val;
+}
+
+function addMatchEvent() {
+  const f = DLS.fixtureById(editingMatchId);
+  if(!f) return;
+  const min = parseInt(document.getElementById('evMin').value)||1;
+  const teamId = parseInt(document.getElementById('evTeam').value);
+  const player = document.getElementById('evPlayer').value;
+  const type = document.getElementById('evType').value;
+  if(!player){toast('Select a player','err');return;}
+  f.events.push({min,teamId,player,type});
+  // Auto increment goals for goal/pen/own
+  if(type==='goal'||type==='pen'){if(teamId===f.homeId)editHomeTmp++;else editAwayTmp++;updateScoreDisplay();}
+  toast(`📋 Event added: ${player} (${type}, ${min}')`);
+}
+
+function saveMatchEdit() {
+  const f = DLS.fixtureById(editingMatchId);
+  if(!f) return;
+  const prevStatus = f.status;
+  f.homeGoals = editHomeTmp;
+  f.awayGoals = editAwayTmp;
+  f.status = document.getElementById('emStatus').value;
+
+  // Notify on status change
+  if(prevStatus !== f.status) {
+    const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+    const msgs = {
+      LIVE: `🔴 Match LIVE: ${h.name} vs ${a.name}`,
+      HT: `⏸️ Half Time: ${h.name} ${f.homeGoals}–${f.awayGoals} ${a.name}`,
+      FT: `✅ Full Time: ${h.name} ${f.homeGoals}–${f.awayGoals} ${a.name}`
+    };
+    if(msgs[f.status]) DLS.notifyAll(msgs[f.status], 'match');
+    // Update player stats if FT
+    if(f.status === 'FT') updatePlayerStatsFromEvents(f);
+  }
+
+  document.getElementById('editMatchModal').style.display = 'none';
+  toast(`✅ Match updated: ${editHomeTmp}–${editAwayTmp} (${f.status})`);
+  renderAll();
+}
+
+function updatePlayerStatsFromEvents(f) {
+  f.events.forEach(ev => {
+    const p = DLS.players.find(p=>p.name===ev.player&&p.teamId===ev.teamId);
+    if(!p) return;
+    if(ev.type==='goal'||ev.type==='pen') p.goals++;
+    if(ev.type==='assist') p.assists++;
+  });
+}
+
+function deleteMatch(id) {
+  const fid = id || editingMatchId;
+  if(!confirm('Delete this match?')) return;
+  const idx = DLS.fixtures.findIndex(f=>f.id===fid);
+  if(idx>=0) DLS.fixtures.splice(idx,1);
+  document.getElementById('editMatchModal').style.display = 'none';
+  toast('🗑️ Match deleted', 'warn');
+  renderAll();
+}
+
+// ── FULL TABLE ─────────────────────────────────────────────
+function renderFullTable() {
+  const table = DLS.computeTable();
+  document.getElementById('fullTableBody').innerHTML = table.map((row,i) => {
+    const t = DLS.teamById(row.id);
+    const gd = row.GF - row.GA;
+    return `<tr>
+      <td>${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:9px;height:9px;border-radius:50%;background:${t.color}"></div>${t.logo} ${t.name}</div></td>
+      <td class="rc">${row.P}</td><td class="rc">${row.W}</td><td class="rc">${row.D}</td><td class="rc">${row.L}</td>
+      <td class="rc">${row.GF}</td><td class="rc">${row.GA}</td>
+      <td class="rc" style="color:${gd>0?'var(--green)':gd<0?'var(--red)':'var(--muted)'}">${gd>0?'+':''}${gd}</td>
+      <td class="rc pts-cell">${row.Pts}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SCORE REPORTS ──────────────────────────────────────────
+function renderReports() {
+  const pending = DLS.scoreReports.filter(r=>r.status==='pending').length;
+  document.getElementById('reportsBadge').textContent = pending;
+
+  document.getElementById('reportsTable').innerHTML = `<table>
+    <thead><tr><th>Match</th><th>Result</th><th>Submitted By</th><th>Note</th><th class="rc">Status</th><th class="rc">Action</th></tr></thead>
+    <tbody>${DLS.scoreReports.map(r => {
+      const f=DLS.fixtureById(r.fixtureId);
+      if(!f) return '';
+      const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+      const sub=DLS.userById(r.submittedBy);
+      const cls={pending:'s-pending',approved:'s-approved',rejected:'s-rejected'}[r.status];
+      const btns = r.status==='pending' ? `
+        <button class="btn btn-green btn-sm" onclick="approveReport(${r.id})" style="margin-right:4px">✓</button>
+        <button class="btn btn-red btn-sm" onclick="rejectReport(${r.id})">✗</button>` : '—';
+      return `<tr>
+        <td>${h.logo} ${h.name} vs ${a.logo} ${a.name}<div style="font-size:10px;color:var(--muted)">${f.date} ${f.time}</div></td>
+        <td><strong style="color:var(--amber)">${r.homeGoals} – ${r.awayGoals}</strong></td>
+        <td>${sub.name||'—'}<div style="font-size:10px;color:var(--muted)">${r.time}</div></td>
+        <td style="color:var(--muted);font-size:12px">${r.note||'—'}</td>
+        <td class="rc"><span class="status-badge ${cls}">${r.status}</span></td>
+        <td class="rc">${btns}</td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No reports</td></tr>'}</tbody>
+  </table>`;
+}
+
+function approveReport(id) {
+  const r = DLS.scoreReports.find(x=>x.id===id); if(!r) return;
+  r.status = 'approved';
+  const f = DLS.fixtureById(r.fixtureId);
+  if(f) {
+    f.homeGoals = r.homeGoals; f.awayGoals = r.awayGoals; f.status = 'FT';
+    updatePlayerStatsFromEvents(f);
+    const h=DLS.teamById(f.homeId),a=DLS.teamById(f.awayId);
+    DLS.notifyAll(`✅ Result confirmed: ${h.name} ${r.homeGoals}–${r.awayGoals} ${a.name}`, 'table');
+    DLS.notifications.push({id:DLS.nextId(DLS.notifications),userId:r.submittedBy,msg:'Your score report was approved! ✅',read:false,time:'Just now',type:'report'});
+  }
+  toast('✅ Report approved & score updated!');
+  renderAll();
+}
+
+function rejectReport(id) {
+  const r = DLS.scoreReports.find(x=>x.id===id); if(!r) return;
+  r.status = 'rejected';
+  DLS.notifications.push({id:DLS.nextId(DLS.notifications),userId:r.submittedBy,msg:'Your score report was rejected. Contact admin.',read:false,time:'Just now',type:'report'});
+  toast('Score report rejected', 'warn');
+  renderAll();
+}
+
+// ── USERS ──────────────────────────────────────────────────
+function renderUsers() {
+  document.getElementById('usersList').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">${
+    DLS.users.map(u => {
+      const t = DLS.teamById(u.teamId);
+      return `<div class="user-card ${u.banned?'opacity:0.5':''}">
+        <div class="user-ava" style="border-color:${t.color}">${u.avatar}</div>
+        <div class="user-info">
+          <div class="uname">${u.name} ${u.banned?'<span style="color:var(--red);font-size:10px">BANNED</span>':''}</div>
+          <div class="umeta">@${u.username} · ${t.logo} ${t.name}</div>
+          <div class="umeta" style="margin-top:2px;color:var(--muted)">
+            ${DLS.players.filter(p=>p.teamId===u.teamId).reduce((s,p)=>s+p.goals,0)} goals ·
+            ${DLS.players.filter(p=>p.teamId===u.teamId).reduce((s,p)=>s+p.assists,0)} assists
+          </div>
+        </div>
+        <div class="user-actions">
+          <button class="btn btn-amber btn-sm" onclick="editUser(${u.id})" title="Edit">✏️</button>
+          <button class="btn ${u.banned?'btn-green':'btn-red'} btn-sm" onclick="toggleBan(${u.id})" title="${u.banned?'Unban':'Ban'}">${u.banned?'✓':'🚫'}</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetPass(${u.id})" title="Reset PW">🔑</button>
+        </div>
+      </div>`;
+    }).join('')
+  }</div>`;
+}
+
+function openNewUserModal() {
+  document.getElementById('newUserTitle').textContent = 'Add Player';
+  document.getElementById('nuEditId').value = '';
+  document.getElementById('nuName').value = '';
+  document.getElementById('nuUsername').value = '';
+  document.getElementById('nuPass').value = '';
+  document.getElementById('nuTeam').innerHTML = DLS.teams.map(t=>`<option value="${t.id}">${t.logo} ${t.name}</option>`).join('');
+  document.getElementById('nuAva').value = '⚽';
+  document.querySelectorAll('.ava-opt').forEach(e=>e.classList.remove('selected'));
+  document.querySelector('.ava-opt').classList.add('selected');
+  document.getElementById('newUserModal').style.display = 'flex';
+}
+
+function editUser(uid) {
+  const u = DLS.userById(uid);
+  document.getElementById('newUserTitle').textContent = 'Edit Player';
+  document.getElementById('nuEditId').value = uid;
+  document.getElementById('nuName').value = u.name;
+  document.getElementById('nuUsername').value = u.username;
+  document.getElementById('nuPass').value = '';
+  document.getElementById('nuTeam').innerHTML = DLS.teams.map(t=>`<option value="${t.id}" ${t.id===u.teamId?'selected':''}>${t.logo} ${t.name}</option>`).join('');
+  document.getElementById('nuAva').value = u.avatar;
+  document.querySelectorAll('.ava-opt').forEach(e=>e.classList.toggle('selected', e.textContent===u.avatar));
+  document.getElementById('newUserModal').style.display = 'flex';
+}
+
+function selectAva(el, val) {
+  document.querySelectorAll('.ava-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('nuAva').value = val;
+}
+
+function saveUser() {
+  const editId = document.getElementById('nuEditId').value;
+  const name = document.getElementById('nuName').value.trim();
+  const username = document.getElementById('nuUsername').value.trim();
+  const pass = document.getElementById('nuPass').value;
+  const teamId = parseInt(document.getElementById('nuTeam').value);
+  const avatar = document.getElementById('nuAva').value;
+
+  if(!name||!username){toast('Name and username required','err');return;}
+  if(!editId && !pass){toast('Password required for new player','err');return;}
+  if(!editId && DLS.users.find(u=>u.username===username)){toast('Username already taken','err');return;}
+
+  if(editId) {
+    const u = DLS.userById(parseInt(editId));
+    u.name = name; u.username = username; u.teamId = teamId; u.avatar = avatar;
+    if(pass) u.password = pass;
+    toast(`✅ Player updated: ${name}`);
+  } else {
+    const newUser = { id:DLS.nextId(DLS.users), username, password:pass, name, teamId, role:'player', avatar, banned:false };
+    DLS.users.push(newUser);
+    DLS.notifications.push({id:DLS.nextId(DLS.notifications),userId:newUser.id,msg:`Welcome to DLS League, ${name}! 🎉`,read:false,time:'Just now',type:'match'});
+    toast(`✅ Player added: ${name}`);
+  }
+  document.getElementById('newUserModal').style.display = 'none';
+  renderAll();
+}
+
+function toggleBan(uid) {
+  const u = DLS.userById(uid);
+  u.banned = !u.banned;
+  toast(u.banned ? `🚫 ${u.name} banned` : `✅ ${u.name} unbanned`, u.banned?'warn':'ok');
+  renderAll();
+}
+
+function resetPass(uid) {
+  const u = DLS.userById(uid);
+  const np = prompt(`New password for ${u.name}:`);
+  if(np) { u.password = np; toast(`🔑 Password reset for ${u.name}`); }
+}
+
+// ── TEAMS ──────────────────────────────────────────────────
+function renderTeams() {
+  const table = DLS.computeTable();
+  document.getElementById('teamsList').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">${
+    DLS.teams.map(t => {
+      const row = table.find(r=>r.id===t.id)||{P:0,W:0,D:0,L:0,GF:0,GA:0,Pts:0};
+      const pos = table.findIndex(r=>r.id===t.id)+1;
+      const players = DLS.players.filter(p=>p.teamId===t.id);
+      return `<div class="card" style="border-color:${t.color}40">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="font-size:40px;width:56px;height:56px;border-radius:50%;border:3px solid ${t.color};background:${t.color}15;display:flex;align-items:center;justify-content:center">${t.logo}</div>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px">${t.name}</div>
+            <div style="font-size:11px;color:var(--muted)">Mgr: ${t.manager} · #${pos} in table</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-bottom:12px">
+          ${[['Pts',row.Pts,'var(--amber)'],['W',row.W,'var(--green)'],['GF',row.GF,'var(--blue)'],['P',row.P,'var(--muted)']].map(([l,v,c])=>`
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${c}">${v}</div>
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase">${l}</div>
+            </div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">SQUAD (${players.length})</div>
+        ${players.map(p=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(30,45,72,.3);font-size:12px"><span>${p.name}</span><span style="color:var(--muted)">⚽${p.goals} 🎯${p.assists}</span></div>`).join('')}
+      </div>`;
+    }).join('')
+  }</div>`;
+}
+
+// ── STATS ──────────────────────────────────────────────────
+function renderStats() {
+  const makeList = (arr, key, label, color) => arr.slice(0,8).map((p,i)=>{
+    const t=DLS.teamById(p.teamId);
+    const medals=['🥇','🥈','🥉'];
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(30,45,72,.4)">
+      <div style="font-size:${i<3?'20px':'16px'};width:24px;text-align:center;color:var(--muted);font-family:'Bebas Neue',sans-serif">${medals[i]||i+1}</div>
+      <div style="font-size:16px">${t.logo}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${p.name}</div><div style="font-size:11px;color:var(--muted)">${t.name}</div></div>
+      <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:${color}">${p[key]}</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">${label}</div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('scorersList').innerHTML = makeList([...DLS.players].sort((a,b)=>b.goals-a.goals),'goals','Goals','var(--green)');
+  document.getElementById('assistsList').innerHTML = makeList([...DLS.players].sort((a,b)=>b.assists-a.assists),'assists','Assists','var(--blue)');
+}
+
+// ── SETTINGS ──────────────────────────────────────────────
+function saveSettings() {
+  DLS.settings.leagueName = document.getElementById('setLeague').value;
+  DLS.settings.season = document.getElementById('setSeason').value;
+  DLS.settings.city = document.getElementById('setCity').value;
+  toast('✅ Settings saved!');
+}
+
+function changePass() {
+  const np = document.getElementById('newPass').value;
+  const cp = document.getElementById('confPass').value;
+  if(!np) { toast('Enter a password','err'); return; }
+  if(np !== cp) { toast('Passwords do not match','err'); return; }
+  DLS.settings.adminPassword = np;
+  document.getElementById('newPass').value = '';
+  document.getElementById('confPass').value = '';
+  toast('🔐 Admin password changed!');
+}
+
+function sendBroadcast() {
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  const type = document.getElementById('broadcastType').value;
+  if(!msg) { toast('Enter a message','err'); return; }
+  DLS.notifyAll(msg, type);
+  document.getElementById('broadcastMsg').value = '';
+  toast(`📣 Broadcast sent to ${DLS.users.length} players!`);
+}
+
+// ── INIT ───────────────────────────────────────────────────
+// Allow Enter key on login
+document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+</script>
+</body>
+</html>
